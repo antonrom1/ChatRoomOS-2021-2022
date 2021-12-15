@@ -23,7 +23,6 @@ void handle_client_message(fd_set *current_iter_sockets_fds, fd_set *next_iter_s
 port_t get_port_from_str(char *port_str);
 port_t parse_args(int argc, char **argv);
 bool close_socket_if_needed(int client_fd);
-int accept_new_connection(int master_socket_fd);
 void handle_new_client_connection(int master_socket_fd, fd_set &next_iter_sockets_fds);
 [[noreturn]] void handle_all_requests(
 	int master_socket_fd,
