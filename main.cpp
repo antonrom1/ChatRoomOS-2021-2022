@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <cstdlib>  // exit(EXIT_CODE)
 #include <climits> // ULONG_MAX
+#include <cstdint>
 
 #define PRINT_USAGE fprintf(stderr, "Usage: ./serveur <port>\n")
 
@@ -35,8 +36,19 @@ port_t get_port_from(char *port_str) {
 }
 
 int main(int argc, char **argv) {
+  int opt = 1;
+  int master_socket;
   int socket_fd;
   struct sockaddr_in server_address{};
+
+  if ((master_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+      log_err_and_exit ("Failed to create socket", SOCKET_ERROR_EXIT_CODE);
+  }
+
+  if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt))){
+    log_err_and_exit ("Failed to set socket option", SOCKET_ERROR_EXIT_CODE);
+  }
+
 
   if (argc != NUM_PROGRAM_ARGS + 1) {
 	log_err_and_exit("Invalid number of arguments", BAD_USAGE_EXIT_CODE);
