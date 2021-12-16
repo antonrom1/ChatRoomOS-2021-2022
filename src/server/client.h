@@ -5,6 +5,8 @@
 #ifndef PROJETCHAT_SRC_SERVER_CLIENT_H_
 #define PROJETCHAT_SRC_SERVER_CLIENT_H_
 
+#include "username.h"
+
 #include <string>
 #include <optional>
 
@@ -13,34 +15,25 @@ class Client {
 
   explicit Client(int socket_fd) : socket_fd_(socket_fd) {}
 
-  [[nodiscard]] int GetSocketFd() const {
-	return socket_fd_;
-  }
+  [[nodiscard]] int GetSocketFd() const;
 
-  [[nodiscard]] const std::optional<std::string> &GetUsername() const {
-	return username_;
-  }
+  [[nodiscard]] const std::optional<Username> &GetUsername() const;
 
-  void SetUsername(const std::string &username) {
-	username_ = username;
-  }
+  void SetUsername(Username username);
 
-  [[nodiscard]] bool HasUsername() const {
-	return GetUsername().has_value();
-  }
+  [[nodiscard]] bool HasUsername() const;
 
-  bool operator==(const Client &rhs) const {
-	return socket_fd_ == rhs.socket_fd_ &&
-		username_ == rhs.username_;
-  }
+  bool operator==(const Client &rhs) const;
 
-  bool operator!=(const Client &rhs) const {
-	return !(rhs == *this);
-  }
+  bool operator!=(const Client &rhs) const;
+
+  Client(const Client &);
+  Client(Client &&) noexcept;
+  Client& operator=(const Client &other);
 
  private:
   int socket_fd_;
-  std::optional<std::string> username_;
+  std::optional<Username> username_;
 };
 
 #endif //PROJETCHAT_SRC_SERVER_CLIENT_H_

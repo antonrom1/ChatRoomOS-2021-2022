@@ -4,6 +4,7 @@
 
 #include "chat_room.h"
 #include "../common/error_handling.h"
+#include "username.h"
 
 
 
@@ -79,13 +80,13 @@ void ChatRoom::HandleClientReadForIO(Client &client) {
 
   ssize_t num_bytes_written_to_buffer;
   while ((num_bytes_written_to_buffer = read(client.GetSocketFd(), receive_buffer, MAX_MESS_SIZE - 1)) > 0) {
-
 	if (!client.HasUsername()) {
 	  // sends a message
-	  client.SetUsername(std::string(receive_buffer));
+
+	  client.SetUsername(Username(receive_buffer));
 	} else {
 	  // sends username
-	  printf("%s a envoyé: %s\n", client.GetUsername().value().c_str(), receive_buffer);
+	  printf("%s a envoyé: %s\n", client.GetUsername().value().GetValue().c_str(), receive_buffer);
 	}
 
 
