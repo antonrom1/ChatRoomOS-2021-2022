@@ -1,3 +1,8 @@
+#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
+
+#include "../common/error_handling.h"
+#include "../common/communication.h"
+
 #include <cstdio>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -7,40 +12,30 @@
 #include <cstdint> // UINT16_MAX
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <iostream>
 
-using namespace std;
-
-#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
-#include "../common/error_handling.h"
-#include "../common/message.h"
-
-#define MAX_PORT_NUMBER UINT16_MAX
 #define NUM_PROGRAM_ARGS 3
 
-#define SOCKETS_BACKLOG 64 // the maximum length for the queue of pending connections.
 #define MAX_RECEIVE_BUFFER_SIZE 1024
 
-typedef uint16_t port_t;
-
-struct Argument{
-  char * pseudo;
-  char * ServerIp;
+struct Argument {
+  char *pseudo;
+  char *ServerIp;
   port_t ServerPort;
 };
 
-int setup_client_socket_fd(port_t kServerPort, const char * ServerIp);
+int setup_client_socket_fd(port_t kServerPort, const char *ServerIp);
 port_t get_port_from_str(char *port_str);
 Argument parse_args(int argc, char **argv);
 [[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds);
 void handle_server_message(int fd, fd_set *selected_sockets_fds, fd_set *all_sockets_fds);
 
-void setup_fd_set(const port_t kServerPort,
-                  int &client_socket_fd,
-                  const char * ServerIp,
-                  fd_set sockets_fds);
+void setup_fd_set(port_t kServerPort,
+				  int &client_socket_fd,
+				  const char *ServerIp,
+				  fd_set sockets_fds);
 
 int main(int argc, char **argv) {
   Argument arg = parse_args(argc, argv);
@@ -49,38 +44,36 @@ int main(int argc, char **argv) {
   const char *kServerIp = arg.ServerIp;
   const char *kClientPseudo = arg.pseudo;
 
-
   int client_socket_fd;
   fd_set sockets_fds;
-
 
   setup_fd_set(kServerPort, client_socket_fd, kServerIp, sockets_fds);
   handle_all_requests(client_socket_fd, sockets_fds);
 }
 
 void setup_fd_set(const port_t kServerPort,
-                  int &client_socket_fd,
-                  const char * ServerIp,
-                  fd_set sockets_fds) {
-  client_socket_fd= setup_client_socket_fd(kServerPort, ServerIp);
+				  int &client_socket_fd,
+				  const char *ServerIp,
+				  fd_set sockets_fds) {
+  client_socket_fd = setup_client_socket_fd(kServerPort, ServerIp);
   FD_ZERO(&sockets_fds);
   FD_SET(client_socket_fd, &sockets_fds);
 }
 
-int setup_client_socket_fd(port_t kServerPort, const char * ServerIp) {
+int setup_client_socket_fd(port_t kServerPort, const char *ServerIp) {
   // create the socket
   int client_socket_fd = HANDLE_CALL_ERRORS(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP), EXIT_SOCK_ERROR);
 
-  struct hostent* host = gethostbyname (ServerIp);
+  struct hostent *host = gethostbyname(ServerIp);
   struct sockaddr_in server_address;
 
-  bzero((char*)&server_address, sizeof(server_address));
+  bzero((char *)&server_address, sizeof(server_address));
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons (kServerPort);
-  server_address.sin_addr.s_addr = inet_addr(inet_ntoa (*(struct in_addr*)*host->h_addr_list));
+  server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list));
 
-  HANDLE_CALL_ERRORS(connect (client_socket_fd, (struct sockaddr*) &server_address,
-                              sizeof(server_address)), EXIT_OTHER_ERROR);
+  HANDLE_CALL_ERRORS(connect(client_socket_fd, (struct sockaddr *)&server_address,
+							 sizeof(server_address)), EXIT_OTHER_ERROR);
 
   return client_socket_fd;
 }
@@ -89,8 +82,8 @@ port_t get_port_from_str(char *port_str) {
   const unsigned long l_port = strtoul(port_str, nullptr, 10);
 
   if (l_port == 0 || l_port == ULONG_MAX || l_port > MAX_PORT_NUMBER) {
-      log_err_and_exit("Specified port is not valid", EXIT_BAD_USAGE_ERROR);
-    }
+	log_err_and_exit("Specified port is not valid", EXIT_BAD_USAGE_ERROR);
+  }
 
   return static_cast<port_t>(l_port); // the conversion is safe, we checked for bounds
 }
@@ -98,28 +91,21 @@ port_t get_port_from_str(char *port_str) {
 Argument parse_args(int argc, char **argv) {
 
   if (argc != NUM_PROGRAM_ARGS + 1) {
-      log_err_and_exit("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);
-    }
+	log_err_and_exit("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);
+  }
 
   return {argv[1], argv[2], get_port_from_str(argv[3])};
 }
 
 [[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds) {
+  char buffer[MAX_MESS_SIZE + 1];
+  for (;;) {
+	//TODO use the send/recv function with a thread
+	bzero(buffer, MAX_MESS_SIZE);
+	fgets(buffer, MAX_MESS_SIZE, stdin);
 
-  pthread_t newthread;
-  string data;
-  char buffer[1024] = {0};
-  for(;;){
-      //TODO use the send/recv function with a thread
-
-      getline(cin, data);
-      memset(&buffer, 0, sizeof(buffer));//clear the buffer
-      strcpy(buffer, data.c_str());
-
-      send(client_socket_fd , buffer , strlen(buffer) , 0 );
-      printf("%s\n", buffer);
-      read( client_socket_fd , buffer, 1024);
-      printf("%s\n hhe",buffer );
+	send(client_socket_fd, buffer, strlen(buffer), 0);
+	read(client_socket_fd, buffer, MAX_MESS_SIZE);
+	printf("%s\n", buffer);
   }
-
 }
