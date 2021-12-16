@@ -24,10 +24,11 @@ struct MessageData {
 };
 
 void message_to_str(MessageData *msg, char* buff, unsigned max_message_size) {
-  auto timestamp_addr_in_buff = buff;
-  auto msg_addr_in_buff = mess_size_addr_in_buff + sizeof(msg->mess_size);
+  // TODO: that's ugly and hacky code, we'd better fix it
+  auto timestamp_and_mess_size_addr_in_buff = buff;
+  auto msg_addr_in_buff = timestamp_and_mess_size_addr_in_buff + sizeof(msg->mess_size);
 
-  memcpy(timestamp_addr_in_buff, &msg->timestamp, sizeof(msg->timestamp) + sizeof(msg->mess_size));
+  memcpy(timestamp_and_mess_size_addr_in_buff, &msg->timestamp, sizeof(msg->timestamp) + sizeof(msg->mess_size));
   memcpy(msg_addr_in_buff, msg->message, strnlen(msg->message, max_message_size));
 }
 
