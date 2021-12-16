@@ -12,17 +12,17 @@ ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port)) 
 
 [[noreturn]] void ChatRoom::Listen() {
   for (;;) {
-	for (auto &client : GetFdsReadyForIO()) {
-	  HandleClientReadForIO(client);
+	auto clients = GetFdsReadyForIO();
+	for (auto &client : clients) {
+	  HandleClientReadForIO(*client);
 	}
   }
 }
 
 
-std::vector<Client> ChatRoom::GetFdsReadyForIO() {
+std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
   fd_set fds_ready_for_io = clients_set_.GetClientsFds();
 
-  // TODO: Replace FD_SETSIZE with a more optimized version. This way we won't iterate 1024 times uselessly
   HANDLE_CALL_ERRORS(select(FD_SETSIZE, &fds_ready_for_io, nullptr, nullptr, nullptr), EXIT_SOCK_ERROR);
 
   if (FD_ISSET(clients_set_.GetMasterFd(), &fds_ready_for_io)) {
@@ -30,10 +30,10 @@ std::vector<Client> ChatRoom::GetFdsReadyForIO() {
 	HandleNewClientConnection();
   }
 
-  std::vector<Client> clients_ready_for_io;
-  for (const Client &client : clients_set_) {
+  std::vector<Client*> clients_ready_for_io;
+  for (Client &client : clients_set_) {
 	if (FD_ISSET(client.GetSocketFd(), &fds_ready_for_io)) {
-	  clients_ready_for_io.push_back(client);
+	  clients_ready_for_io.push_back(&client);
 	}
   }
   return clients_ready_for_io;
@@ -70,7 +70,7 @@ void ChatRoom::HandleNewClientConnection() {
 }
 
 
-void ChatRoom::HandleClientReadForIO(Client client) {
+void ChatRoom::HandleClientReadForIO(Client &client) {
   char receive_buffer[MAX_MESS_SIZE + 1];
   char output_buffer[MAX_MESS_SIZE + 1];
 

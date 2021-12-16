@@ -23,9 +23,9 @@ class ChatRoom {
   explicit ChatRoom(long port);
 
   [[noreturn]] void Listen();
-  std::vector<Client> GetFdsReadyForIO();
+  std::vector<Client *> GetFdsReadyForIO();
  private:
-  void HandleClientReadForIO(Client client);
+  void HandleClientReadForIO(Client &client);
   static int SetupMasterSocket(port_t kServerPort);
   void HandleNewClientConnection();
 
