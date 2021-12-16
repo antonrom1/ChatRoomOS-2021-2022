@@ -19,75 +19,62 @@ typedef uint16_t port_t;
 
 int setup_master_socket_fd(port_t kServerPort);
 void process_client_socket_request(int client_socket_fd);
-void handle_client_message(fd_set *current_iter_sockets_fds, fd_set *next_iter_sockets_fds);
+void handle_client_message(int fd, fd_set *selected_sockets_fds, fd_set *all_sockets_fds);
 port_t get_port_from_str(char *port_str);
 port_t parse_args(int argc, char **argv);
 bool close_socket_if_needed(int client_fd, fd_set *fds);
-void handle_new_client_connection(int master_socket_fd, fd_set &next_iter_sockets_fds);
+int handle_new_client_connection(int master_socket_fd, fd_set &all_sockets_fds);
+[[noreturn]] void handle_all_requests(int master_socket_fd, fd_set &all_sockets_fds);
 
-[[noreturn]] void handle_all_requests(
-	int master_socket_fd,
-	fd_set &current_iter_sockets_fds,
-	fd_set &next_iter_sockets_fds);
-
-void setup_fd_set(const port_t kServerPort,
-				  int &master_socket_fd,
-				  fd_set &current_iter_sockets_fds,
-				  fd_set &next_iter_sockets_fds);
-
-
+void setup_fd_set(const port_t &kServerPort, int &master_socket_fd, fd_set &sockets_fds);
 
 int main(int argc, char **argv) {
   const port_t kServerPort = parse_args(argc, argv);
   int master_socket_fd;
-  fd_set current_iter_sockets_fds, next_iter_sockets_fds;
+  fd_set sockets_fds;
 
-  setup_fd_set(kServerPort, master_socket_fd, current_iter_sockets_fds, next_iter_sockets_fds);
-  handle_all_requests(master_socket_fd, current_iter_sockets_fds, next_iter_sockets_fds);
+  setup_fd_set(kServerPort, master_socket_fd, sockets_fds);
+  handle_all_requests(master_socket_fd, sockets_fds);
 }
 
-
-void setup_fd_set(const port_t kServerPort,
-				  int &master_socket_fd,
-				  fd_set &current_iter_sockets_fds,
-				  fd_set &next_iter_sockets_fds) {
-  master_socket_fd= setup_master_socket_fd(kServerPort);
-  FD_ZERO(&next_iter_sockets_fds);
-  FD_SET(master_socket_fd, &next_iter_sockets_fds);
-  current_iter_sockets_fds = next_iter_sockets_fds;
+void setup_fd_set(const port_t &kServerPort, int &master_socket_fd, fd_set &sockets_fds) {
+  master_socket_fd = setup_master_socket_fd(kServerPort);
+  FD_ZERO(&sockets_fds);
+  FD_SET(master_socket_fd, &sockets_fds);
 }
 
-[[noreturn]] void handle_all_requests(int master_socket_fd, fd_set &current_iter_sockets_fds, fd_set &next_iter_sockets_fds) {
+[[noreturn]] void handle_all_requests(int master_socket_fd, fd_set &all_sockets_fds) {
+  fd_set selected_sockets_fds;
   for (;;) {
-	// select is destructive
-	current_iter_sockets_fds = next_iter_sockets_fds;
+	selected_sockets_fds = all_sockets_fds;
 
 	// TODO: Replace FD_SETSIZE with a more optimized version. This way we won't iterate 1024 times uselessly
-	HANDLE_CALL_ERRORS(select(FD_SETSIZE, &current_iter_sockets_fds, NULL, NULL, NULL), EXIT_SOCK_ERROR);
+	HANDLE_CALL_ERRORS(select(FD_SETSIZE, &selected_sockets_fds, NULL, NULL, NULL), EXIT_SOCK_ERROR);
 
-	if (FD_ISSET(master_socket_fd, &current_iter_sockets_fds)) {
-	  // new client
-	  handle_new_client_connection(master_socket_fd, next_iter_sockets_fds);
-	} else {
-	  // new message
-	  handle_client_message(&current_iter_sockets_fds, &next_iter_sockets_fds);
+	if (FD_ISSET(master_socket_fd, &selected_sockets_fds)) {
+	  // we have a new connection
+	  handle_new_client_connection(master_socket_fd, all_sockets_fds);
+	}
+
+	for (int i = 0; i < FD_SETSIZE; i++) {
+	  if (i != master_socket_fd && FD_ISSET(i, &selected_sockets_fds)) {
+		// we have a new message
+		handle_client_message(i, &selected_sockets_fds, &all_sockets_fds);
+	  }
 	}
   }
 }
 
-void handle_new_client_connection(int master_socket_fd, fd_set &next_iter_sockets_fds) {
+int handle_new_client_connection(int master_socket_fd, fd_set &all_sockets_fds) {
   int new_client_fd = accept(master_socket_fd, static_cast<sockaddr *>(nullptr), nullptr);
-  FD_SET(new_client_fd, &next_iter_sockets_fds);
-  process_client_socket_request(new_client_fd);
-  close_socket_if_needed(new_client_fd, &next_iter_sockets_fds);
+  FD_SET(new_client_fd, &all_sockets_fds);
+  return new_client_fd;
 }
 
-void handle_client_message(fd_set *current_iter_sockets_fds, fd_set *next_iter_sockets_fds) {
-  for (int i = 0; i < FD_SETSIZE; i++) {
-	if (FD_ISSET(i, current_iter_sockets_fds)) {
-	  process_client_socket_request(i);
-	  close_socket_if_needed(i, next_iter_sockets_fds);
-	}
+void handle_client_message(int fd, fd_set *selected_sockets_fds, fd_set *all_sockets_fds) {
+  if (FD_ISSET(fd, selected_sockets_fds)) {
+	process_client_socket_request(fd);
+	close_socket_if_needed(fd, all_sockets_fds);
   }
 }
 
@@ -146,13 +133,17 @@ void process_client_socket_request(int client_socket_fd) {
 								 EXIT_SOCK_ERROR)) > 0) {
 
 	printf("%s\n", receive_buffer);
+
+	// TODO: better termination detection
 	if (receive_buffer[num_bytes_written_to_buffer - 1] == '\n') {
 	  break;
 	}
 
 	bzero(receive_buffer, MAX_RECEIVE_BUFFER_SIZE);
   }
-  snprintf(output_buffer, sizeof(output_buffer), "HTTP/1.0 200 OK\r\n\r\n<h1 style=\"color:white;font-family:helvetica\">Hello world</h1><style>html {background: black;}</style>");
+  snprintf(output_buffer,
+		   sizeof(output_buffer),
+		   "HTTP/1.1 200 OK\r\n\r\n<h1 style=\"color:white;font-family:helvetica\">Hello world</h1><style>html {background: black;}</style>");
   write(client_socket_fd, output_buffer, strlen(output_buffer));
 }
 

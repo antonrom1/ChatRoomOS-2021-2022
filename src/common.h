@@ -17,6 +17,21 @@
 #define PRINT_USAGE fprintf(stderr, USAGE)
 #define HANDLE_CALL_ERRORS(call, exit_code) error_handler(call, #call, exit_code)
 
+struct MessageData {
+  time_t timestamp;
+  ssize_t mess_size;
+  char* message;
+};
+
+void message_to_str(MessageData *msg, char* buff, unsigned max_message_size) {
+  // TODO: that's ugly and hacky code, we'd better fix it
+  auto timestamp_and_mess_size_addr_in_buff = buff;
+  auto msg_addr_in_buff = timestamp_and_mess_size_addr_in_buff + sizeof(msg->mess_size);
+
+  memcpy(timestamp_and_mess_size_addr_in_buff, &msg->timestamp, sizeof(msg->timestamp) + sizeof(msg->mess_size));
+  memcpy(msg_addr_in_buff, msg->message, strnlen(msg->message, max_message_size));
+}
+
 [[noreturn]] void log_err_and_exit(const char *error_message, int exit_code) {
   fprintf(stderr, "%s\n", error_message);
 
