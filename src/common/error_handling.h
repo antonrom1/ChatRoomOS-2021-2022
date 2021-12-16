@@ -1,35 +1,30 @@
 //
-// Created by Anton Romanova on 15/12/2021.
+// Created by Anton Romanova on 16/12/2021.
 //
 
-#ifndef PROJETCHAT_SRC_COMMON_H_
-#define PROJETCHAT_SRC_COMMON_H_
+#ifndef PROJETCHAT_COMMON_ERROR_HANDLING_H_
+#define PROJETCHAT_COMMON_ERROR_HANDLING_H_
 
 #include <cstdio>
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
 
-#define EXIT_BAD_USAGE_ERROR 1
-#define EXIT_SOCK_ERROR 2
-#define EXIT_OTHER_ERROR 3
+#ifndef USAGE
+#error "USAGE must be defined"
+#endif
 
 #define PRINT_USAGE fprintf(stderr, USAGE)
 #define HANDLE_CALL_ERRORS(call, exit_code) error_handler(call, #call, exit_code)
 
-struct MessageData {
-  time_t timestamp;
-  ssize_t mess_size;
-  char* message;
-};
+#define EXIT_BAD_USAGE_ERROR 1
+#define EXIT_SOCK_ERROR 2
+#define EXIT_OTHER_ERROR 3
 
-void message_to_str(MessageData *msg, char* buff, unsigned max_message_size) {
-  // TODO: that's ugly and hacky code, we'd better fix it
-  auto timestamp_and_mess_size_addr_in_buff = buff;
-  auto msg_addr_in_buff = timestamp_and_mess_size_addr_in_buff + sizeof(msg->mess_size);
-
-  memcpy(timestamp_and_mess_size_addr_in_buff, &msg->timestamp, sizeof(msg->timestamp) + sizeof(msg->mess_size));
-  memcpy(msg_addr_in_buff, msg->message, strnlen(msg->message, max_message_size));
+[[noreturn]] void log_err_and_exit(const char *error_message, int exit_code);
+int error_handler(int ret, const char *fun_name, int exit_code);
+void print_usage() {
+  PRINT_USAGE;
 }
 
 [[noreturn]] void log_err_and_exit(const char *error_message, int exit_code) {
@@ -55,4 +50,4 @@ int error_handler(int ret, const char *fun_name, int exit_code) {
   return ret;
 }
 
-#endif //PROJETCHAT_SRC_COMMON_H_
+#endif //PROJETCHAT_COMMON_ERROR_HANDLING_H_

@@ -1,3 +1,8 @@
+#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
+
+#include "../common/error_handling.h"
+#include "../common/message.h"
+
 #include <cstdio>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -8,9 +13,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
-#include "../common.h"
-
 #define MAX_PORT_NUMBER UINT16_MAX
 #define NUM_PROGRAM_ARGS 3
 
@@ -19,7 +21,7 @@
 
 typedef uint16_t port_t;
 
-struct Argument{
+struct client_parameters_t{
   char * pseudo;
   char * ServerIp;
   port_t ServerPort;
@@ -27,15 +29,15 @@ struct Argument{
 
 int setup_client_socket_fd(int &client_address);
 port_t get_port_from_str(char *port_str);
-Argument parse_args(int argc, char **argv);
+client_parameters_t parse_args(int argc, char **argv);
 
-void setup_fd_set(const port_t kServerPort,
+void setup_fd_set(port_t kServerPort,
                   int &client_socket_fd,
                   const char * ServerIp,
                   const char * ClientPseudo);
 
 int main(int argc, char **argv) {
-  Argument arg = parse_args(argc, argv);
+  client_parameters_t arg = parse_args(argc, argv);
 
   const port_t kServerPort = arg.ServerPort;
   const char *kServerIp = arg.ServerIp;
@@ -88,7 +90,7 @@ port_t get_port_from_str(char *port_str) {
   return static_cast<port_t>(l_port); // the conversion is safe, we checked for bounds
 }
 
-Argument parse_args(int argc, char **argv) {
+client_parameters_t parse_args(int argc, char **argv) {
 
   if (argc != NUM_PROGRAM_ARGS + 1) {
       log_err_and_exit("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);

@@ -1,3 +1,8 @@
+#define USAGE "Usage: ./serveur <port>\n"
+
+#include "../common/error_handling.h"
+#include "../common/message.h"
+
 #include <cstdio>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -5,9 +10,6 @@
 #include <cstdlib>  // exit(EXIT_CODE)
 #include <climits> // ULONG_MAX
 #include <cstdint> // UINT16_MAX
-
-#define USAGE "Usage: ./serveur <port>\n"
-#include "../common.h"
 
 #define MAX_PORT_NUMBER UINT16_MAX
 #define NUM_PROGRAM_ARGS 1
@@ -25,7 +27,6 @@ port_t parse_args(int argc, char **argv);
 bool close_socket_if_needed(int client_fd, fd_set *fds);
 int handle_new_client_connection(int master_socket_fd, fd_set &all_sockets_fds);
 [[noreturn]] void handle_all_requests(int master_socket_fd, fd_set &all_sockets_fds);
-
 void setup_fd_set(const port_t &kServerPort, int &master_socket_fd, fd_set &sockets_fds);
 
 int main(int argc, char **argv) {
