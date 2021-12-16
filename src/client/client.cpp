@@ -7,6 +7,11 @@
 #include <cstdint> // UINT16_MAX
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+
+using namespace std;
 
 #define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
 #include "../common/error_handling.h"
@@ -29,7 +34,8 @@ struct Argument{
 int setup_client_socket_fd(port_t kServerPort, const char * ServerIp);
 port_t get_port_from_str(char *port_str);
 Argument parse_args(int argc, char **argv);
-[[noreturn]] void handle_all_requests(int master_socket_fd, fd_set &all_sockets_fds);
+[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds);
+void handle_server_message(int fd, fd_set *selected_sockets_fds, fd_set *all_sockets_fds);
 
 void setup_fd_set(const port_t kServerPort,
                   int &client_socket_fd,
@@ -98,8 +104,22 @@ Argument parse_args(int argc, char **argv) {
   return {argv[1], argv[2], get_port_from_str(argv[3])};
 }
 
-[[noreturn]] void handle_all_requests(int master_socket_fd, fd_set &all_sockets_fds) {
-  for(;;)
-    printf ("okkay");
-  //TODO create the send/recv function with a thread
+[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds) {
+
+  pthread_t newthread;
+  string data;
+  char buffer[1024] = {0};
+  for(;;){
+      //TODO use the send/recv function with a thread
+
+      getline(cin, data);
+      memset(&buffer, 0, sizeof(buffer));//clear the buffer
+      strcpy(buffer, data.c_str());
+
+      send(client_socket_fd , buffer , strlen(buffer) , 0 );
+      printf("%s\n", buffer);
+      read( client_socket_fd , buffer, 1024);
+      printf("%s\n hhe",buffer );
+  }
+
 }
