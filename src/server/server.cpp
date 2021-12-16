@@ -24,6 +24,7 @@ port_t get_port_from_str(char *port_str);
 port_t parse_args(int argc, char **argv);
 bool close_socket_if_needed(int client_fd, fd_set *fds);
 void handle_new_client_connection(int master_socket_fd, fd_set &next_iter_sockets_fds);
+
 [[noreturn]] void handle_all_requests(
 	int master_socket_fd,
 	fd_set &current_iter_sockets_fds,
@@ -44,7 +45,6 @@ int main(int argc, char **argv) {
   setup_fd_set(kServerPort, master_socket_fd, current_iter_sockets_fds, next_iter_sockets_fds);
   handle_all_requests(master_socket_fd, current_iter_sockets_fds, next_iter_sockets_fds);
 }
-
 
 
 void setup_fd_set(const port_t kServerPort,
@@ -138,7 +138,7 @@ void process_client_socket_request(int client_socket_fd) {
   char output_buffer[MAX_RECEIVE_BUFFER_SIZE + 1];
 
   bzero(receive_buffer, MAX_RECEIVE_BUFFER_SIZE);
-  bzero(receive_buffer, MAX_RECEIVE_BUFFER_SIZE);
+  bzero(output_buffer, MAX_RECEIVE_BUFFER_SIZE);
 
   ssize_t num_bytes_written_to_buffer;
   while ((num_bytes_written_to_buffer =
@@ -152,7 +152,7 @@ void process_client_socket_request(int client_socket_fd) {
 
 	bzero(receive_buffer, MAX_RECEIVE_BUFFER_SIZE);
   }
-  snprintf(output_buffer, sizeof(output_buffer), "HTTP/1.0 200 OK\r\n\r\n<h1 style=\"color:white;font-family:Verdana\">Hello world</h1><style>html {background: black;}</style>");
+  snprintf(output_buffer, sizeof(output_buffer), "HTTP/1.0 200 OK\r\n\r\n<h1 style=\"color:white;font-family:helvetica\">Hello world</h1><style>html {background: black;}</style>");
   write(client_socket_fd, output_buffer, strlen(output_buffer));
 }
 
