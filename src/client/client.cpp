@@ -29,7 +29,7 @@ struct Argument {
 int setup_client_socket_fd(port_t kServerPort, const char *ServerIp);
 port_t get_port_from_str(char *port_str);
 Argument parse_args(int argc, char **argv);
-void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo);
+void handle_all_requests(int client_socket_fd, const char *pseudo);
 [[noreturn]] void* listen_to_server(void * arg);
 void disconnect(const char * pseudo);
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   fd_set sockets_fds;
 
   setup_fd_set(kServerPort, client_socket_fd, kServerIp, sockets_fds);
-  handle_all_requests(client_socket_fd, sockets_fds, kClientPseudo);
+  handle_all_requests(client_socket_fd, kClientPseudo);
 }
 
 void setup_fd_set(const port_t kServerPort,
@@ -68,12 +68,12 @@ int setup_client_socket_fd(port_t kServerPort, const char *ServerIp) {
   struct hostent *host = gethostbyname(ServerIp);
   struct sockaddr_in server_address;
 
-  bzero((char *)&server_address, sizeof(server_address));
+  bzero(reinterpret_cast<char *>(&server_address), sizeof(server_address));
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons (kServerPort);
-  server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list));
+  server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*reinterpret_cast<struct in_addr *>(*host->h_addr_list)));
 
-  HANDLE_CALL_ERRORS(connect(client_socket_fd, (struct sockaddr *)&server_address,
+  HANDLE_CALL_ERRORS(connect(client_socket_fd, reinterpret_cast<struct sockaddr *>(&server_address),
 							 sizeof(server_address)), EXIT_OTHER_ERROR);
 
   return client_socket_fd;
@@ -98,9 +98,9 @@ Argument parse_args(int argc, char **argv) {
   return {argv[1], argv[2], get_port_from_str(argv[3])};
 }
 
-void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo) {
+void handle_all_requests(int client_socket_fd, const char *pseudo) {
   pthread_t new_thread;
-  pthread_create(&new_thread, NULL, listen_to_server, &client_socket_fd);
+  pthread_create(&new_thread, nullptr, listen_to_server, &client_socket_fd);
   send(client_socket_fd, pseudo, strlen(pseudo), 0); //send the pseudo
 
   for (;;) {
@@ -112,7 +112,7 @@ void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const ch
 	if (user_input_ptr == nullptr)
 	  break;
 
-	send(client_socket_fd, (char *)&message, sizeof(message), 0);
+	send(client_socket_fd, reinterpret_cast<char *>(&message), sizeof(message), 0);
   }
   disconnect(pseudo);
   pthread_kill(new_thread, SIGINT);
@@ -120,7 +120,7 @@ void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const ch
 
 [[noreturn]] void * listen_to_server(void * arg){
   for(;;){
-      int * server_socket_fd = (int *) arg;
+      int * server_socket_fd = static_cast<int *>(arg);
 
       char buffer[MAX_MESS_SIZE + 1];
       bzero(buffer, MAX_MESS_SIZE);

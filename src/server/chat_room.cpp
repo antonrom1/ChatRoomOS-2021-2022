@@ -7,13 +7,11 @@
 #include "../common/error_handling.h"
 #include "username.h"
 
-ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port))
+ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(static_cast<port_t>(port)))
 {
   for (const int &sig : {SIGINT, SIGPIPE}) {
 	signal(sig, ChatRoom::SigHandler);
   }
-  struct sigaction a {};
-//  a.ac
 }
 
 void ChatRoom::Listen() {
@@ -62,7 +60,7 @@ int ChatRoom::SetupMasterSocket(port_t kServerPort) {
 
   // make the port reusable
   int opt = SETSOCKOPT_REUSABLE;
-  HANDLE_CALL_ERRORS(setsockopt(master_socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)),
+  HANDLE_CALL_ERRORS(setsockopt(master_socket_fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&opt), sizeof(opt)),
 					 EXIT_SOCK_ERROR);
 
   // setup socket address
@@ -72,7 +70,7 @@ int ChatRoom::SetupMasterSocket(port_t kServerPort) {
   server_address.sin_port = htons(kServerPort);
 
   // bind and listen
-  HANDLE_CALL_ERRORS(bind(master_socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)),
+  HANDLE_CALL_ERRORS(bind(master_socket_fd, reinterpret_cast<struct sockaddr *>(&server_address), sizeof(server_address)),
 					 EXIT_SOCK_ERROR);
   HANDLE_CALL_ERRORS(listen(master_socket_fd, SOCKETS_BACKLOG), EXIT_SOCK_ERROR);
 
@@ -98,7 +96,7 @@ void ChatRoom::HandleClientReadForIO(Client &client) {
 	  client.SetUsername(Username(receive_buffer));
 	} else {
 	  // the user has already given his/her username, the buffer should represent an actual message
-	  Message message = *((Message *)receive_buffer);
+	  Message message = *(reinterpret_cast<Message *>(receive_buffer));
 	  AddMessageToSendQueue(GetMessageReprFrom(message, client.GetUsername().value()));
 	}
   } else if (num_bytes_written_to_buffer <= 0) {
