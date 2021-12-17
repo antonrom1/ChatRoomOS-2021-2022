@@ -21,21 +21,32 @@
 
 class ChatRoom {
  public:
-  explicit ChatRoom(long port);
+  static ChatRoom *Start(long port);
+  static ChatRoom *GetShared();
 
-  [[noreturn]] void Listen();
+  void Listen();
   std::vector<Client *> GetFdsReadyForIO();
  private:
-  void HandleClientReadForIO(Client &client);
+  explicit ChatRoom(long port);
+
   static int SetupMasterSocket(port_t kServerPort);
+  static void SigHandler(int sig);
+
+  static ChatRoom *shared_;
+
+  static void SetShared(ChatRoom *shared);
+
+  void HandleClientReadForIO(Client &client);
   void HandleNewClientConnection();
   static std::string GetMessageReprFrom(const Message &message, const Username &username);
   void SendAllMessages();
   void AddMessageToSendQueue(const std::string &message);
   void SendToAll(const std::string &message);
+  void Stop();
 
   ClientsSet clients_set_;
   std::queue<std::string> pending_messages_;
+  bool ShouldStop = false;
 };
 
 

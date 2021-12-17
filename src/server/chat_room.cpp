@@ -2,14 +2,21 @@
 // Created by Anton Romanova on 16/12/2021.
 //
 
+#include <csignal>
 #include "chat_room.h"
 #include "../common/error_handling.h"
 #include "username.h"
 
-ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port)) {}
+ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port))
+{
+  for (const int &sig : {SIGINT, SIGPIPE}) {
+	signal(sig, ChatRoom::SigHandler);
+  }
+}
 
-[[noreturn]] void ChatRoom::Listen() {
-  for (;;) {
+void ChatRoom::Listen() {
+
+  while (!ShouldStop) {
 	auto clients = GetFdsReadyForIO();
 	for (auto &client : clients) {
 	  HandleClientReadForIO(*client);
@@ -97,14 +104,45 @@ std::string ChatRoom::GetMessageReprFrom(const Message &message, const Username 
 
   return username.GetValue() + " sent a message at " + time + "\t" + message.message;
 }
+
 void ChatRoom::SendAllMessages() {
   while (!pending_messages_.empty()) {
 	SendToAll(pending_messages_.front());
 	pending_messages_.pop();
   }
 }
+
 void ChatRoom::SendToAll(const std::string &message) {
   for (auto &client : clients_set_) {
 	send(client.GetSocketFd(), message.c_str(), message.size(), 0);
   }
 }
+
+void ChatRoom::SigHandler(int sig) {
+  guard(sig != SIGPIPE)
+  if (sig == SIGINT) {
+	printf("Exiting!");
+	if (GetShared() != nullptr) {
+	  GetShared()->Stop();
+	}
+  }
+}
+
+ChatRoom *ChatRoom::Start(long port) {
+  SetShared(new ChatRoom(port));
+  return GetShared();
+}
+
+ChatRoom *ChatRoom::GetShared() {
+  return ChatRoom::shared_;
+}
+
+void ChatRoom::SetShared(ChatRoom *shared) {
+  shared_ = shared;
+}
+
+void ChatRoom::Stop() {
+  //TODO: Add a better stop
+}
+
+ChatRoom * ChatRoom::shared_ = nullptr;
