@@ -17,6 +17,11 @@
 #define SOCKETS_BACKLOG 64
 #define MAX_PORT_NUMBER UINT16_MAX
 
+// 0s 1000us
+#define SELECT_TIMEOUT {0, 1000}
+
+#define SERVER_SIGINT_MESSAGE "Server is about to die :0. See ya'"
+
 typedef uint16_t port_t;
 
 struct Message {

@@ -46,7 +46,7 @@ class ChatRoom {
 
   ClientsSet clients_set_;
   std::queue<std::string> pending_messages_;
-  bool ShouldStop = false;
+  volatile sig_atomic_t should_stop_ = 0;
 };
 
 

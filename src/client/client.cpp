@@ -111,7 +111,6 @@ Argument parse_args(int argc, char **argv) {
 	message.mess_size = strnlen(message.message, sizeof(message.message));
 	message.timestamp = time(nullptr);
 
-
 	send(client_socket_fd, (char *)&message, sizeof(message), 0);
 
   }

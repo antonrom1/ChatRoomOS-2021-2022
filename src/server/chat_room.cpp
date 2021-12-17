@@ -12,23 +12,35 @@ ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port))
   for (const int &sig : {SIGINT, SIGPIPE}) {
 	signal(sig, ChatRoom::SigHandler);
   }
+  struct sigaction a {};
+//  a.ac
 }
 
 void ChatRoom::Listen() {
 
-  while (!ShouldStop) {
+  while (!should_stop_) {
 	auto clients = GetFdsReadyForIO();
 	for (auto &client : clients) {
 	  HandleClientReadForIO(*client);
 	}
 	SendAllMessages();
   }
+  SendToAll(SERVER_SIGINT_MESSAGE);
+
 }
 
 std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
   fd_set fds_ready_for_io = clients_set_.GetClientsFds();
+  struct timeval select_timeout = SELECT_TIMEOUT;
+  auto select_ret = select(FD_SETSIZE, &fds_ready_for_io, nullptr, nullptr, &select_timeout);
 
-  HANDLE_CALL_ERRORS(select(FD_SETSIZE, &fds_ready_for_io, nullptr, nullptr, nullptr), EXIT_SOCK_ERROR);
+  if (select_ret < 0) {
+	if (errno != EINTR) {
+	  log_err_and_exit("Error running select", EXIT_SOCK_ERROR);
+	} else {
+	  return {};
+	}
+  }
 
   if (FD_ISSET(clients_set_.GetMasterFd(), &fds_ready_for_io)) {
 	// we have a new connection
@@ -121,7 +133,6 @@ void ChatRoom::SendToAll(const std::string &message) {
 void ChatRoom::SigHandler(int sig) {
   guard(sig != SIGPIPE)
   if (sig == SIGINT) {
-	printf("Exiting!");
 	if (GetShared() != nullptr) {
 	  GetShared()->Stop();
 	}
@@ -142,7 +153,7 @@ void ChatRoom::SetShared(ChatRoom *shared) {
 }
 
 void ChatRoom::Stop() {
-  //TODO: Add a better stop
+  should_stop_ = true;
 }
 
 ChatRoom * ChatRoom::shared_ = nullptr;
