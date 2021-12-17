@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <ctime>
+#include <signal.h>
 
 #define NUM_PROGRAM_ARGS 3
 
@@ -30,6 +31,7 @@ port_t get_port_from_str(char *port_str);
 Argument parse_args(int argc, char **argv);
 [[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo);
 [[noreturn]] void* listen_to_server(void * arg);
+void disconnect(const char * pseudo);
 
 void setup_fd_set(port_t kServerPort,
 				  int &client_socket_fd,
@@ -102,18 +104,19 @@ Argument parse_args(int argc, char **argv) {
   send(client_socket_fd, pseudo, strlen(pseudo), 0); //send the pseudo
 
   for (;;) {
-	//TODO use the send/recv function with a thread
 	Message message {};
-	bzero(&message, sizeof(message));
-
-
-	fgets(message.message, sizeof(message.message), stdin);
+	auto user_input_ptr = fgets(message.message, sizeof(message.message), stdin);
 	message.mess_size = strnlen(message.message, sizeof(message.message));
 	message.timestamp = time(nullptr);
 
-	send(client_socket_fd, (char *)&message, sizeof(message), 0);
+	if (user_input_ptr == nullptr)
+	  break;
 
+	send(client_socket_fd, (char *)&message, sizeof(message), 0);
   }
+  disconnect(pseudo);
+  pthread_kill(new_thread, SIGINT);
+
 }
 
 [[noreturn]] void * listen_to_server(void * arg){
@@ -123,6 +126,17 @@ Argument parse_args(int argc, char **argv) {
       char buffer[MAX_MESS_SIZE + 1];
       bzero(buffer, MAX_MESS_SIZE);
       read(*server_socket_fd, buffer, MAX_MESS_SIZE);
-      printf ("%s", buffer);
+
+	  if (strcmp(buffer, SERVER_SIGINT_MESSAGE) != 0)
+		printf ("%s", buffer);
+	  else
+		exit(NORMAL_EXIT);
   }
 }
+
+void disconnect(const char * pseudo){
+  printf("Client %s is disconnected\n", pseudo);
+  exit(NORMAL_EXIT);
+}
+
+

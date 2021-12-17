@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <string>
 #include <optional>
+#include <memory>
 
 #define SETSOCKOPT_REUSABLE 1
 #define MAX_MESS_SIZE 1024

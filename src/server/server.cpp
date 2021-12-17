@@ -3,7 +3,6 @@
 #include "../common/error_handling.h"
 #include "chat_room.h"
 
-#include <unistd.h>
 #include <cstdlib>  // exit(EXIT_CODE)
 #include <climits> // ULONG_MAX
 
