@@ -13,6 +13,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <ctime>
 
 #define NUM_PROGRAM_ARGS 3
 
@@ -98,29 +99,30 @@ Argument parse_args(int argc, char **argv) {
 [[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo) {
   pthread_t new_thread;
   pthread_create(&new_thread, NULL, listen_to_server, &client_socket_fd);
+  send(client_socket_fd, pseudo, strlen(pseudo), 0); //send the pseudo
 
-  char buffer[MAX_MESS_SIZE + 1];
   for (;;) {
 	//TODO use the send/recv function with a thread
-      printf ("ici\n");
-	bzero(buffer, MAX_MESS_SIZE);
-	fgets(buffer, MAX_MESS_SIZE, stdin);
+	Message message;
 
-	send(client_socket_fd, buffer, strlen(buffer), 0);
 
-//	printf("%s\n", buffer);
+	fgets(message.message, MAX_MESS_SIZE, stdin);
+	message.mess_size = strnlen(message.message, sizeof(message.message));
+	message.timestamp = time(nullptr);
+
+
+	send(client_socket_fd, (char *)&message, sizeof(message), 0);
+
   }
-  pthread_join (new_thread, NULL);
 }
 
 [[noreturn]] void * listen_to_server(void * arg){
   for(;;){
-      printf ("here\n");
-      int * client_socket_fd = (int *) arg;
+      int * server_socket_fd = (int *) arg;
+
       char buffer[MAX_MESS_SIZE + 1];
       bzero(buffer, MAX_MESS_SIZE);
-      fgets(buffer, MAX_MESS_SIZE, stdin);
-      read(*client_socket_fd, buffer, MAX_MESS_SIZE);
+      read(*server_socket_fd, buffer, MAX_MESS_SIZE);
       printf ("%s", buffer);
   }
 }
