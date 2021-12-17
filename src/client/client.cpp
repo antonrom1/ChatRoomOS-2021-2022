@@ -29,7 +29,7 @@ struct Argument {
 int setup_client_socket_fd(port_t kServerPort, const char *ServerIp);
 port_t get_port_from_str(char *port_str);
 Argument parse_args(int argc, char **argv);
-[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo);
+void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo);
 [[noreturn]] void* listen_to_server(void * arg);
 void disconnect(const char * pseudo);
 
@@ -98,7 +98,7 @@ Argument parse_args(int argc, char **argv) {
   return {argv[1], argv[2], get_port_from_str(argv[3])};
 }
 
-[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo) {
+void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo) {
   pthread_t new_thread;
   pthread_create(&new_thread, NULL, listen_to_server, &client_socket_fd);
   send(client_socket_fd, pseudo, strlen(pseudo), 0); //send the pseudo
@@ -116,7 +116,6 @@ Argument parse_args(int argc, char **argv) {
   }
   disconnect(pseudo);
   pthread_kill(new_thread, SIGINT);
-
 }
 
 [[noreturn]] void * listen_to_server(void * arg){
@@ -130,7 +129,7 @@ Argument parse_args(int argc, char **argv) {
 	  if (strcmp(buffer, SERVER_SIGINT_MESSAGE) != 0)
 		printf ("%s", buffer);
 	  else{
-		printf("Lost connection...\nServer has stopped working X0");
+		printf("Lost connection...\nServer has stopped working X0\n");
 		exit(NORMAL_EXIT);
 	  }
   }
