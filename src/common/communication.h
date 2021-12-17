@@ -24,13 +24,14 @@ struct Message {
   time_t timestamp;
   char message[MAX_MESS_SIZE - sizeof(mess_size) - sizeof(timestamp)];
 
-  std::optional<std::unique_ptr<std::string>> GetFormattedTime() {
-	char * time_c_str = ctime(&timestamp);
+  [[nodiscard]] std::string GetFormattedTime() const{
+	const char * time_c_str = ctime(&timestamp);
+
 	if (time_c_str == nullptr) {
-	  return {};
-	} else {
-	  return std::make_unique<std::string>(time_c_str);
+	  time_c_str = "Unknown time\n";
 	}
+
+	return time_c_str;
   }
 };
 

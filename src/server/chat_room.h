@@ -29,10 +29,13 @@ class ChatRoom {
   void HandleClientReadForIO(Client &client);
   static int SetupMasterSocket(port_t kServerPort);
   void HandleNewClientConnection();
-  std::optional<Message> InterpretMessage(const char *);
+  static std::string GetMessageReprFrom(const Message &message, const Username &username);
+  void SendAllMessages();
+  void AddMessageToSendQueue(const std::string &message);
+  void SendToAll(const std::string &message);
 
   ClientsSet clients_set_;
-  std::queue<Message> pending_messages_;
+  std::queue<std::string> pending_messages_;
 };
 
 

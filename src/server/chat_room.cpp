@@ -14,6 +14,7 @@ ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port)) 
 	for (auto &client : clients) {
 	  HandleClientReadForIO(*client);
 	}
+	SendAllMessages();
   }
 }
 
@@ -71,38 +72,39 @@ void ChatRoom::HandleClientReadForIO(Client &client) {
   bzero(receive_buffer, MAX_MESS_SIZE);
   bzero(output_buffer, MAX_MESS_SIZE);
 
-  ssize_t num_bytes_written_to_buffer;
-  while ((num_bytes_written_to_buffer = read(client.GetSocketFd(), receive_buffer, MAX_MESS_SIZE)) > 0) {
+  ssize_t num_bytes_written_to_buffer = read(client.GetSocketFd(), receive_buffer, MAX_MESS_SIZE);
+  if (num_bytes_written_to_buffer > 0) {
 	if (!client.HasUsername()) {
-	  // sends a message
+	  // The user has to send his (or her) username
 	  client.SetUsername(Username(receive_buffer));
 	} else {
-
+	  // the user has already given his/her username, the buffer should represent an actual message
 	  Message message = *((Message *)receive_buffer);
-	  auto optional_formatted_time_str = message.GetFormattedTime();
-	  std::string time_str {};
-	  if (!optional_formatted_time_str.has_value()) {
-		time_str = "Unknown time\n";
-	  } else {
-		time_str = *optional_formatted_time_str->get();
-	  }
-	  printf("%s sent a message at %s %s\n", client.GetUsername().value().GetValue().c_str(), time_str.c_str(), message.message);
-	  break;
-
+	  AddMessageToSendQueue(GetMessageReprFrom(message, client.GetUsername().value()));
 	}
-
-	bzero(receive_buffer, MAX_MESS_SIZE);
-  }
-  if (num_bytes_written_to_buffer <= 0) {
+  } else if (num_bytes_written_to_buffer <= 0) {
+	// The client might have some problems...
 	clients_set_.RemoveClient(client);
   }
-
-  snprintf(output_buffer,
-		   sizeof(output_buffer),
-		   "Hello world!\n");
-  write(client.GetSocketFd(), output_buffer, strlen(output_buffer));
 }
 
-std::optional<Message> ChatRoom::InterpretMessage(const char *) {
+void ChatRoom::AddMessageToSendQueue(const std::string &message) {
+  pending_messages_.push(message);
+}
 
+std::string ChatRoom::GetMessageReprFrom(const Message &message, const Username &username) {
+  auto time = message.GetFormattedTime();
+
+  return username.GetValue() + " sent a message at " + time + "\t" + message.message;
+}
+void ChatRoom::SendAllMessages() {
+  while (!pending_messages_.empty()) {
+	SendToAll(pending_messages_.front());
+	pending_messages_.pop();
+  }
+}
+void ChatRoom::SendToAll(const std::string &message) {
+  for (auto &client : clients_set_) {
+	send(client.GetSocketFd(), message.c_str(), message.size(), 0);
+  }
 }
