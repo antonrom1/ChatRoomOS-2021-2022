@@ -8,6 +8,7 @@
 #include <cstring>
 #include <ctime>
 #include <cstdint> // UINT16_MAX
+#include <sys/types.h>
 
 #define SETSOCKOPT_REUSABLE 1
 #define MAX_MESS_SIZE 1024

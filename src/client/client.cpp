@@ -12,9 +12,7 @@
 #include <cstdint> // UINT16_MAX
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <cstdio>
-#include <string>
-#include <iostream>
+#include <pthread.h>
 
 #define NUM_PROGRAM_ARGS 3
 
@@ -29,8 +27,8 @@ struct Argument {
 int setup_client_socket_fd(port_t kServerPort, const char *ServerIp);
 port_t get_port_from_str(char *port_str);
 Argument parse_args(int argc, char **argv);
-[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds);
-void handle_server_message(int fd, fd_set *selected_sockets_fds, fd_set *all_sockets_fds);
+[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo);
+[[noreturn]] void* listen_to_server(void * arg);
 
 void setup_fd_set(port_t kServerPort,
 				  int &client_socket_fd,
@@ -48,7 +46,7 @@ int main(int argc, char **argv) {
   fd_set sockets_fds;
 
   setup_fd_set(kServerPort, client_socket_fd, kServerIp, sockets_fds);
-  handle_all_requests(client_socket_fd, sockets_fds);
+  handle_all_requests(client_socket_fd, sockets_fds, kClientPseudo);
 }
 
 void setup_fd_set(const port_t kServerPort,
@@ -97,15 +95,32 @@ Argument parse_args(int argc, char **argv) {
   return {argv[1], argv[2], get_port_from_str(argv[3])};
 }
 
-[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds) {
+[[noreturn]] void handle_all_requests(int client_socket_fd, fd_set &all_sockets_fds, const char * pseudo) {
+  pthread_t new_thread;
+  pthread_create(&new_thread, NULL, listen_to_server, &client_socket_fd);
+
   char buffer[MAX_MESS_SIZE + 1];
   for (;;) {
 	//TODO use the send/recv function with a thread
+      printf ("ici\n");
 	bzero(buffer, MAX_MESS_SIZE);
 	fgets(buffer, MAX_MESS_SIZE, stdin);
 
 	send(client_socket_fd, buffer, strlen(buffer), 0);
-	read(client_socket_fd, buffer, MAX_MESS_SIZE);
-	printf("%s\n", buffer);
+
+//	printf("%s\n", buffer);
+  }
+  pthread_join (new_thread, NULL);
+}
+
+[[noreturn]] void * listen_to_server(void * arg){
+  for(;;){
+      printf ("here\n");
+      int * client_socket_fd = (int *) arg;
+      char buffer[MAX_MESS_SIZE + 1];
+      bzero(buffer, MAX_MESS_SIZE);
+      fgets(buffer, MAX_MESS_SIZE, stdin);
+      read(*client_socket_fd, buffer, MAX_MESS_SIZE);
+      printf ("%s", buffer);
   }
 }

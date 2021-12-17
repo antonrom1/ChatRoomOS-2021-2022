@@ -103,6 +103,6 @@ void ChatRoom::HandleClientReadForIO(Client &client) {
 
   snprintf(output_buffer,
 		   sizeof(output_buffer),
-		   "Hello world!");
+		   "Hello world!\n");
   write(client.GetSocketFd(), output_buffer, strlen(output_buffer));
 }
