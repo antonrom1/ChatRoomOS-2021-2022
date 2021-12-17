@@ -114,7 +114,7 @@ void ChatRoom::AddMessageToSendQueue(const std::string &message) {
 std::string ChatRoom::GetMessageReprFrom(const Message &message, const Username &username) {
   auto time = message.GetFormattedTime();
 
-  return username.GetValue() + " sent a message at " + time + "\t" + message.message;
+  return username.GetValue() + " sent a message at " + time + "\t" + "> " + message.message;
 }
 
 void ChatRoom::SendAllMessages() {
