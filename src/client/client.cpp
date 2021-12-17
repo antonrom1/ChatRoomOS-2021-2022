@@ -130,7 +130,7 @@ Argument parse_args(int argc, char **argv) {
 	  if (strcmp(buffer, SERVER_SIGINT_MESSAGE) != 0)
 		printf ("%s", buffer);
 	  else{
-		printf("Lost connection...\nServer has stopped working X0");
+		printf("Lost connection...\nServer has stopped working X0\n");
 		exit(NORMAL_EXIT);
 	  }
   }
