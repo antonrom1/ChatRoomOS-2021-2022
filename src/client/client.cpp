@@ -103,10 +103,11 @@ Argument parse_args(int argc, char **argv) {
 
   for (;;) {
 	//TODO use the send/recv function with a thread
-	Message message;
+	Message message {};
+	bzero(&message, sizeof(message));
 
 
-	fgets(message.message, MAX_MESS_SIZE, stdin);
+	fgets(message.message, sizeof(message.message), stdin);
 	message.mess_size = strnlen(message.message, sizeof(message.message));
 	message.timestamp = time(nullptr);
 

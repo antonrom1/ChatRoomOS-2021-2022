@@ -6,10 +6,7 @@
 #include "../common/error_handling.h"
 #include "username.h"
 
-
-
 ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port)) {}
-
 
 [[noreturn]] void ChatRoom::Listen() {
   for (;;) {
@@ -19,7 +16,6 @@ ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(port)) 
 	}
   }
 }
-
 
 std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
   fd_set fds_ready_for_io = clients_set_.GetClientsFds();
@@ -31,7 +27,7 @@ std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
 	HandleNewClientConnection();
   }
 
-  std::vector<Client*> clients_ready_for_io;
+  std::vector<Client *> clients_ready_for_io;
   for (Client &client : clients_set_) {
 	if (FD_ISSET(client.GetSocketFd(), &fds_ready_for_io)) {
 	  clients_ready_for_io.push_back(&client);
@@ -39,7 +35,6 @@ std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
   }
   return clients_ready_for_io;
 }
-
 
 int ChatRoom::SetupMasterSocket(port_t kServerPort) {
   // create the socket
@@ -64,12 +59,10 @@ int ChatRoom::SetupMasterSocket(port_t kServerPort) {
   return master_socket_fd;
 }
 
-
 void ChatRoom::HandleNewClientConnection() {
   int new_client_fd = accept(clients_set_.GetMasterFd(), static_cast<sockaddr *>(nullptr), nullptr);
   clients_set_.AddClient(Client{new_client_fd});
 }
-
 
 void ChatRoom::HandleClientReadForIO(Client &client) {
   char receive_buffer[MAX_MESS_SIZE + 1];
@@ -79,20 +72,23 @@ void ChatRoom::HandleClientReadForIO(Client &client) {
   bzero(output_buffer, MAX_MESS_SIZE);
 
   ssize_t num_bytes_written_to_buffer;
-  while ((num_bytes_written_to_buffer = read(client.GetSocketFd(), receive_buffer, MAX_MESS_SIZE - 1)) > 0) {
+  while ((num_bytes_written_to_buffer = read(client.GetSocketFd(), receive_buffer, MAX_MESS_SIZE)) > 0) {
 	if (!client.HasUsername()) {
 	  // sends a message
-
 	  client.SetUsername(Username(receive_buffer));
 	} else {
-	  // sends username
-	  printf("%s a envoyé: %s\n", client.GetUsername().value().GetValue().c_str(), receive_buffer);
-	}
 
-
-	// TODO: better termination detection
-	if (receive_buffer[num_bytes_written_to_buffer - 1] == '\n') {
+	  Message message = *((Message *)receive_buffer);
+	  auto optional_formatted_time_str = message.GetFormattedTime();
+	  std::string time_str {};
+	  if (!optional_formatted_time_str.has_value()) {
+		time_str = "Unknown time\n";
+	  } else {
+		time_str = *optional_formatted_time_str->get();
+	  }
+	  printf("%s sent a message at %s %s\n", client.GetUsername().value().GetValue().c_str(), time_str.c_str(), message.message);
 	  break;
+
 	}
 
 	bzero(receive_buffer, MAX_MESS_SIZE);
@@ -105,4 +101,8 @@ void ChatRoom::HandleClientReadForIO(Client &client) {
 		   sizeof(output_buffer),
 		   "Hello world!\n");
   write(client.GetSocketFd(), output_buffer, strlen(output_buffer));
+}
+
+std::optional<Message> ChatRoom::InterpretMessage(const char *) {
+
 }

@@ -10,7 +10,6 @@
 #include <ostream>
 
 class Username {
-
  public:
   explicit Username(const std::string& value);
   Username(const Username &);

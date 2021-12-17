@@ -13,7 +13,13 @@ port_t get_port_from_str(char *port_str);
 port_t parse_args(int argc, char **argv);
 
 
+void sig_handler(int sig) {
+  guard(sig != SIGPIPE)
+}
+
+
 int main(int argc, char **argv) {
+  signal(SIGPIPE, sig_handler);
   const port_t kServerPort = parse_args(argc, argv);
   auto cr = ChatRoom(kServerPort);
   cr.Listen();

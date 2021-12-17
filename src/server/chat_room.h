@@ -15,6 +15,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <vector>
+#include <queue>
 
 
 
@@ -28,11 +29,11 @@ class ChatRoom {
   void HandleClientReadForIO(Client &client);
   static int SetupMasterSocket(port_t kServerPort);
   void HandleNewClientConnection();
+  std::optional<Message> InterpretMessage(const char *);
 
   ClientsSet clients_set_;
+  std::queue<Message> pending_messages_;
 };
-
-
 
 
 #endif //PROJETCHAT_SRC_SERVER_CHAT_ROOM_H_

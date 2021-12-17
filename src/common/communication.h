@@ -10,6 +10,7 @@
 #include <cstdint> // UINT16_MAX
 #include <sys/types.h>
 #include <string>
+#include <optional>
 
 #define SETSOCKOPT_REUSABLE 1
 #define MAX_MESS_SIZE 1024
@@ -22,6 +23,15 @@ struct Message {
   size_t mess_size;
   time_t timestamp;
   char message[MAX_MESS_SIZE - sizeof(mess_size) - sizeof(timestamp)];
+
+  std::optional<std::unique_ptr<std::string>> GetFormattedTime() {
+	char * time_c_str = ctime(&timestamp);
+	if (time_c_str == nullptr) {
+	  return {};
+	} else {
+	  return std::make_unique<std::string>(time_c_str);
+	}
+  }
 };
 
 #endif //PROJETCHAT_SRC_COMMON_COMMUNICATION_H_
