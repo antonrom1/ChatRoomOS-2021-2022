@@ -30,7 +30,7 @@ endif
 
 ifneq ($(ARCHITECTURE),arm) # M1 MacBook
 ifneq ($(ARCHITECTURE),aarch64)
-	FLAGS := -masm=intel -march=native
+	FLAGS += -masm=intel -march=native
 endif
 endif
 
