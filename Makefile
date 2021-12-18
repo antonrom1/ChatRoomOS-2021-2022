@@ -26,24 +26,25 @@ ifneq ($(NO_OPT),1)
 endif
 
 all: announce $(SERVER_BIN_PATH) $(CLIENT_BIN_PATH)
-	@echo Done!
+	@echo "😎 Done! \n\n"
+	@echo "📍 The binaries are located at $(BUILD_DIR_BIN)\n"
 
 announce:
-	@echo "Compiles with:\n $(CC) $(FLAGS) \n"
-	@echo "Optimisations:\n $(OPTIMIZATION) \n"
+	@echo "🚀 Compiles with:\n $(CC) $(FLAGS) \n"
+	@echo "💪 Optimisations:\n $(OPTIMIZATION) \n"
 
 $(SERVER_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(wildcard $(SRC_DIR)server/*.cpp) $(wildcard $(SRC_DIR)common/*.cpp)))
-	@echo "\nlinking $@\n"
+	@echo "\n🔗 linking $@\n"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -o $@ $^
 
 $(CLIENT_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(wildcard $(SRC_DIR)client/*.cpp) $(wildcard $(SRC_DIR)common/*.cpp)))
-	@echo "\nlinking $@\n"
+	@echo "\n🔗 linking $@\n"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -o $@ $^
 
 $(BUILD_DIR)%.o: $(SRC_DIR)%.cpp | $(BUILD_DIR)
-	@echo compiling $< to $@
+	@echo "🚀 compiling $< to $@"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -c -o $@ $<
 
