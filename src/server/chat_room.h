@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <vector>
 #include <queue>
-#include <signal.h>
+#include <csignal>
 
 
 
@@ -30,7 +30,7 @@ class ChatRoom {
  private:
   explicit ChatRoom(long port);
 
-  static int SetupMasterSocket(port_t kServerPort);
+  static unsigned SetupMasterSocket(port_t kServerPort);
   static void SigHandler(int sig);
 
   static ChatRoom *shared_;

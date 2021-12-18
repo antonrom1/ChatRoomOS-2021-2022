@@ -53,7 +53,7 @@ std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
   return clients_ready_for_io;
 }
 
-int ChatRoom::SetupMasterSocket(port_t kServerPort) {
+unsigned ChatRoom::SetupMasterSocket(port_t kServerPort) {
   // create the socket
   int master_socket_fd = HANDLE_CALL_ERRORS(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP), EXIT_SOCK_ERROR);
 
@@ -79,11 +79,11 @@ int ChatRoom::SetupMasterSocket(port_t kServerPort) {
 					 EXIT_SOCK_ERROR);
   HANDLE_CALL_ERRORS(listen(master_socket_fd, SOCKETS_BACKLOG), EXIT_SOCK_ERROR);
 
-  return master_socket_fd;
+  return static_cast<unsigned>(master_socket_fd);
 }
 
 void ChatRoom::HandleNewClientConnection() {
-  int new_client_fd = accept(clients_set_.GetMasterFd(), static_cast<sockaddr *>(nullptr), nullptr);
+  int new_client_fd = accept(static_cast<int>(clients_set_.GetMasterFd()), static_cast<sockaddr *>(nullptr), nullptr);
   clients_set_.AddClient(Client{new_client_fd});
 }
 
