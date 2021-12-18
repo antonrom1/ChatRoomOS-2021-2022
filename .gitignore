@@ -34,5 +34,6 @@
 # Executables
 cmake-build-debug/
 build/
+bin/
 .idea/
 .DS_STORE
