@@ -33,7 +33,7 @@ std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
 
   if (select_ret < 0) {
 	if (errno != EINTR) {
-	  log_err_and_exit("Error running select", EXIT_SOCK_ERROR);
+	  ERR_N_EXIT("Error running select", EXIT_SOCK_ERROR);
 	} else {
 	  return {};
 	}
@@ -55,16 +55,16 @@ std::vector<Client *> ChatRoom::GetFdsReadyForIO() {
 
 unsigned ChatRoom::SetupMasterSocket(port_t kServerPort) {
   // create the socket
-  int master_socket_fd = HANDLE_CALL_ERRORS(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP), EXIT_SOCK_ERROR);
+  int master_socket_fd = TRY(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP), EXIT_SOCK_ERROR);
 
   // make the port reusable
   int opt = SETSOCKOPT_REUSABLE;
-  HANDLE_CALL_ERRORS(setsockopt(master_socket_fd,
-								SOL_SOCKET,
-								SO_REUSEADDR,
-								reinterpret_cast<char *>(&opt),
-								sizeof(opt)),
-					 EXIT_SOCK_ERROR);
+  TRY(setsockopt(master_socket_fd,
+				 SOL_SOCKET,
+				 SO_REUSEADDR,
+				 reinterpret_cast<char *>(&opt),
+				 sizeof(opt)),
+	  EXIT_SOCK_ERROR);
 
   // setup socket address
   struct sockaddr_in server_address{};
@@ -73,11 +73,11 @@ unsigned ChatRoom::SetupMasterSocket(port_t kServerPort) {
   server_address.sin_port = htons(kServerPort);
 
   // bind and listen
-  HANDLE_CALL_ERRORS(bind(master_socket_fd,
-						  reinterpret_cast<struct sockaddr *>(&server_address),
-						  sizeof(server_address)),
-					 EXIT_SOCK_ERROR);
-  HANDLE_CALL_ERRORS(listen(master_socket_fd, SOCKETS_BACKLOG), EXIT_SOCK_ERROR);
+  TRY(bind(master_socket_fd,
+		   reinterpret_cast<struct sockaddr *>(&server_address),
+		   sizeof(server_address)),
+	  EXIT_SOCK_ERROR);
+  TRY(listen(master_socket_fd, SOCKETS_BACKLOG), EXIT_SOCK_ERROR);
 
   return static_cast<unsigned>(master_socket_fd);
 }

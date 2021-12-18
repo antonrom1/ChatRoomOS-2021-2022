@@ -5,7 +5,6 @@
 #ifndef PROJETCHAT_SRC_SERVER_CHAT_ROOM_H_
 #define PROJETCHAT_SRC_SERVER_CHAT_ROOM_H_
 
-#include "server_usage.h"
 #include "../common/communication.h"
 #include "client.h"
 #include "clients_set.h"

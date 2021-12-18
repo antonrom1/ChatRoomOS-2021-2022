@@ -1,5 +1,3 @@
-#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
-
 #include "../common/error_handling.h"
 #include "../common/communication.h"
 
@@ -14,10 +12,10 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <ctime>
-#include <signal.h>
+#include <csignal>
 
 #define NUM_PROGRAM_ARGS 3
-
+#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
 #define MAX_RECEIVE_BUFFER_SIZE 1024
 
 struct Argument {
@@ -39,6 +37,7 @@ void setup_fd_set(port_t kServerPort,
 				  fd_set sockets_fds);
 
 int main(int argc, char **argv) {
+  INIT_ERROR_HANDLER_USAGE_MESSAGE(USAGE);
   Argument arg = parse_args(argc, argv);
 
   const port_t kServerPort = arg.ServerPort;
@@ -63,7 +62,7 @@ void setup_fd_set(const port_t kServerPort,
 
 int setup_client_socket_fd(port_t kServerPort, const char *ServerIp) {
   // create the socket
-  int client_socket_fd = HANDLE_CALL_ERRORS(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP), EXIT_SOCK_ERROR);
+  int client_socket_fd = TRY(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP), EXIT_SOCK_ERROR);
 
   struct hostent *host = gethostbyname(ServerIp);
   struct sockaddr_in server_address;
@@ -73,8 +72,8 @@ int setup_client_socket_fd(port_t kServerPort, const char *ServerIp) {
   server_address.sin_port = htons (kServerPort);
   server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*reinterpret_cast<struct in_addr *>(*host->h_addr_list)));
 
-  HANDLE_CALL_ERRORS(connect(client_socket_fd, reinterpret_cast<struct sockaddr *>(&server_address),
-							 sizeof(server_address)), EXIT_OTHER_ERROR);
+  TRY(connect(client_socket_fd, reinterpret_cast<struct sockaddr *>(&server_address),
+			  sizeof(server_address)), EXIT_OTHER_ERROR);
 
   return client_socket_fd;
 }
@@ -83,7 +82,7 @@ port_t get_port_from_str(char *port_str) {
   const unsigned long l_port = strtoul(port_str, nullptr, 10);
 
   if (l_port == 0 || l_port == ULONG_MAX || l_port > MAX_PORT_NUMBER) {
-	log_err_and_exit("Specified port is not valid", EXIT_BAD_USAGE_ERROR);
+	ERR_N_EXIT("Specified port is not valid", EXIT_BAD_USAGE_ERROR);
   }
 
   return static_cast<port_t>(l_port); // the conversion is safe, we checked for bounds
@@ -92,7 +91,7 @@ port_t get_port_from_str(char *port_str) {
 Argument parse_args(int argc, char **argv) {
 
   if (argc != NUM_PROGRAM_ARGS + 1) {
-	log_err_and_exit("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);
+	ERR_N_EXIT("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);
   }
 
   return {argv[1], argv[2], get_port_from_str(argv[3])};
