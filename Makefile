@@ -51,7 +51,7 @@ all: announce $(SERVER_BIN_PATH) $(CLIENT_BIN_PATH)
 
 announce:
 	@echo "🚀 Optimisations:\n $(OPTIMIZATION) \n"
-	@echo "$(COMPILING_EMOJI) Compiles with:\n $(CC) $(OPTIMIZATION) $(FLAGS) \n"
+	@echo "$(COMPILING_EMOJI) Compiles with:\n $(CC) $(FLAGS) \n"
 
 $(SERVER_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(foreach dir, $(SRC_DIRS_FOR_SERVER), $(wildcard $(dir)*.cpp))))
 	@echo "$(LINKING_EMOJI) linking $@"
