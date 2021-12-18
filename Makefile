@@ -12,7 +12,7 @@ ARCHITECTURE := $(shell uname -p)
 
 OPTIMIZATION = -O3 -funroll-loops
 CC = g++
-FLAGS = -std=c++2a $(shell ncurses5.4-config --cflags) -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Weffc++ -Wmisleading-indentation -Wold-style-cast -Wzero-as-null-pointer-constant -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy
+FLAGS = -std=c++2a -Wall -Wextra -Wpedantic -Wconversion -Weffc++ -Wmisleading-indentation -Wold-style-cast -Wzero-as-null-pointer-constant -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy
 
 LINKING_EMOJI = "🔗"
 COMPILING_EMOJI = "🚀"
@@ -23,14 +23,15 @@ CLIENT_BIN_PATH = $(BUILD_DIR_BIN)client
 
 ifeq ($(OS_NAME),Darwin) # certaines options ne sont pas dispo sur g++ pour mac (et il est plus simple pour moi de compiler sur mac pendant que je code)
 	RM_ARGS += *.dSYM # symboles pour debugage (sur mac)
+	FLAGS += $(shell ncurses5.4-config --cflags)
 else
 	OPTIMIZATION += -fopenmp -frename-registers
 	FLAGS += -march=native -fconcepts -Wuseless-cast -Wstrict-null-sentinel -Wnoexcept -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override
 endif
 
-ifneq ($(ARCHITECTURE),arm) # M1 MacBook
+ifneq ($(ARCHITECTURE),arm) # intel (not M1 MacBook)
 ifneq ($(ARCHITECTURE),aarch64)
-	FLAGS += -masm=intel -march=native
+	FLAGS += -masm=intel -march=native -lncurses
 endif
 endif
 
