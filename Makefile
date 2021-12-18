@@ -33,12 +33,12 @@ announce:
 	@echo "Optimisations:\n $(OPTIMIZATION) \n"
 
 $(SERVER_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(wildcard $(SRC_DIR)server/*.cpp) $(wildcard $(SRC_DIR)common/*.cpp)))
-	@echo linking... $@ $^
+	@echo "\nlinking $@\n"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -o $@ $^
 
 $(CLIENT_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(wildcard $(SRC_DIR)client/*.cpp) $(wildcard $(SRC_DIR)common/*.cpp)))
-	@echo linking... $@ $^
+	@echo "\nlinking $@\n"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -o $@ $^
 
