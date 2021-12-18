@@ -33,7 +33,7 @@ class Client {
 
  private:
   int socket_fd_;
-  std::optional<Username> username_;
+  std::optional<Username> username_ {};
 };
 
 #endif //PROJETCHAT_SRC_SERVER_CLIENT_H_

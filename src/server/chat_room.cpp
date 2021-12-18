@@ -7,8 +7,7 @@
 #include "../common/error_handling.h"
 #include "username.h"
 
-ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(static_cast<port_t>(port)))
-{
+ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(static_cast<port_t>(port))) {
   for (const int &sig : {SIGINT, SIGPIPE}) {
 	signal(sig, ChatRoom::SigHandler);
   }
@@ -60,7 +59,11 @@ int ChatRoom::SetupMasterSocket(port_t kServerPort) {
 
   // make the port reusable
   int opt = SETSOCKOPT_REUSABLE;
-  HANDLE_CALL_ERRORS(setsockopt(master_socket_fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&opt), sizeof(opt)),
+  HANDLE_CALL_ERRORS(setsockopt(master_socket_fd,
+								SOL_SOCKET,
+								SO_REUSEADDR,
+								reinterpret_cast<char *>(&opt),
+								sizeof(opt)),
 					 EXIT_SOCK_ERROR);
 
   // setup socket address
@@ -70,7 +73,9 @@ int ChatRoom::SetupMasterSocket(port_t kServerPort) {
   server_address.sin_port = htons(kServerPort);
 
   // bind and listen
-  HANDLE_CALL_ERRORS(bind(master_socket_fd, reinterpret_cast<struct sockaddr *>(&server_address), sizeof(server_address)),
+  HANDLE_CALL_ERRORS(bind(master_socket_fd,
+						  reinterpret_cast<struct sockaddr *>(&server_address),
+						  sizeof(server_address)),
 					 EXIT_SOCK_ERROR);
   HANDLE_CALL_ERRORS(listen(master_socket_fd, SOCKETS_BACKLOG), EXIT_SOCK_ERROR);
 
@@ -154,4 +159,4 @@ void ChatRoom::Stop() {
   should_stop_ = true;
 }
 
-ChatRoom * ChatRoom::shared_ = nullptr;
+ChatRoom *ChatRoom::shared_ = nullptr;

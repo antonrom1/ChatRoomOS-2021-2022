@@ -35,7 +35,7 @@ class ClientsSet {
  private:
   int master_fd_;
   fd_set clients_fds_ {};
-  std::vector<Client> clients_;
+  std::vector<Client> clients_ {};
 };
 
 #endif //PROJETCHAT_SRC_SERVER_CLIENTS_SET_H_

@@ -18,7 +18,7 @@ ifeq ($(OS_NAME),Darwin) # certaines options ne sont pas dispo sur g++ pour mac 
 	endif
 else
 	OPTIMIZATION =  $(OPRIMIZATION) -fopenmp -frename-registers
-	FLAGS := $(FLAGS) -masm=intel -march=native -fconcepts -Wstrict-null-sentinel -Wnoexcept -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override
+	FLAGS := $(FLAGS) -masm=intel -march=native -fconcepts -W-mlong-double-128useless-cast -Wstrict-null-sentinel -Wnoexcept -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override
 endif
 
 all: announce $(SERVER_BIN_PATH) $(CLIENT_BIN_PATH)
