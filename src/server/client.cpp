@@ -22,13 +22,8 @@ bool Client::operator==(const Client &rhs) const {
 bool Client::operator!=(const Client &rhs) const {
   return !(rhs == *this);
 }
-Client::Client(Client &&other) noexcept {
-  socket_fd_ = other.socket_fd_;
-  username_ = std::move(other.username_);
-}
-Client::Client(const Client &other) {
-  *this = other;
-}
+Client::Client(Client &&other) noexcept : socket_fd_(other.socket_fd_), username_(std::move(other.username_)){}
+Client::Client(const Client &other) = default;
 Client &Client::operator=(const Client &other) {
   if (this != &other){
 	socket_fd_ = other.socket_fd_;

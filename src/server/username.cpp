@@ -38,12 +38,9 @@ std::ostream &operator<<(std::ostream &os, const Username &username) {
   return os;
 }
 
-Username::Username(const Username &other) {
-  *this = other;
-}
-Username::Username(Username && username) noexcept{
-  value_ = std::move(username.value_);
-}
+Username::Username(const Username &other) = default;
+Username::Username(Username &&username) noexcept: value_(std::move(username.value_)) {}
+
 Username &Username::operator=(const Username &other) {
   if (this != &other) {
 	value_ = other.value_;

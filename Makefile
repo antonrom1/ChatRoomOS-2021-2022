@@ -8,6 +8,10 @@ FLAGS = -std=c++2a -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Weff
 OS_NAME := $(shell uname -s)
 ARCHITECTURE := $(shell uname -p)
 
+LINKING_EMOJI = "🔗"
+COMPILING_EMOJI = "🚀"
+
+
 SERVER_BIN_PATH = $(BUILD_DIR_BIN)server
 CLIENT_BIN_PATH = $(BUILD_DIR_BIN)client
 
@@ -30,21 +34,21 @@ all: announce $(SERVER_BIN_PATH) $(CLIENT_BIN_PATH)
 	@echo "📍 The binaries are located at $(BUILD_DIR_BIN)\n"
 
 announce:
-	@echo "🚀 Compiles with:\n $(CC) $(FLAGS) \n"
+	@echo "$(COMPILING_EMOJI) Compiles with:\n $(CC) $(FLAGS) \n"
 	@echo "💪 Optimisations:\n $(OPTIMIZATION) \n"
 
 $(SERVER_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(wildcard $(SRC_DIR)server/*.cpp) $(wildcard $(SRC_DIR)common/*.cpp)))
-	@echo "\n🔗 linking $@\n"
+	@echo "\n$(LINKING_EMOJI) linking $@\n"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -o $@ $^
 
 $(CLIENT_BIN_PATH): $(patsubst %.cpp, %.o, $(patsubst $(SRC_DIR)%, $(BUILD_DIR)%, $(wildcard $(SRC_DIR)client/*.cpp) $(wildcard $(SRC_DIR)common/*.cpp)))
-	@echo "\n🔗 linking $@\n"
+	@echo "\n$(LINKING_EMOJI) linking $@\n"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -o $@ $^
 
 $(BUILD_DIR)%.o: $(SRC_DIR)%.cpp | $(BUILD_DIR)
-	@echo "🚀 compiling $< to $@"
+	@echo "$(COMPILING_EMOJI) compiling $< to $@"
 	mkdir -p $(@D)
 	@$(CC) $(OPTIMIZATION) $(FLAGS) -c -o $@ $<
 
