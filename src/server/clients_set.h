@@ -11,7 +11,7 @@
 
 class ClientsSet {
  public:
-  explicit ClientsSet(int master_fd) : master_fd_(master_fd) {
+  explicit ClientsSet(unsigned master_fd) : master_fd_(master_fd) {
 	Clear();
 	FD_SET(master_fd, &clients_fds_);
   }
@@ -22,7 +22,7 @@ class ClientsSet {
 
   [[nodiscard]] const fd_set &GetClientsFds() const;
 
-  [[nodiscard]] int GetMasterFd() const;
+  [[nodiscard]] unsigned GetMasterFd() const;
 
   auto begin() {
 	return clients_.begin();
@@ -33,7 +33,7 @@ class ClientsSet {
   }
 
  private:
-  int master_fd_;
+  unsigned master_fd_;
   fd_set clients_fds_ {};
   std::vector<Client> clients_ {};
 };

@@ -25,6 +25,6 @@ void ClientsSet::RemoveClient(const Client &client) {
   clients_.erase(std::remove(clients_.begin(), clients_.end(), client), clients_.end());
 }
 
-int ClientsSet::GetMasterFd() const {
+unsigned ClientsSet::GetMasterFd() const {
   return master_fd_;
 }

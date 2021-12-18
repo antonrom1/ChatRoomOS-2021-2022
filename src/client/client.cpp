@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 }
 
 void setup_fd_set(const port_t kServerPort,
-				  int &client_socket_fd,
+				  unsigned &client_socket_fd,
 				  const char *ServerIp,
 				  fd_set sockets_fds) {
   client_socket_fd = setup_client_socket_fd(kServerPort, ServerIp);
