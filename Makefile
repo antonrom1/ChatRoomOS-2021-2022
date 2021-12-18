@@ -4,7 +4,7 @@ BUILD_DIR_BIN = $(BUILD_DIR)bin/
 RM_ARGS := -rf ./build
 OPTIMIZATION = -O3 -funroll-loops
 CC = g++
-FLAGS = -std=c++2a -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Weffc++ -Wmisleading-indentation -Wold-style-cast -Wzero-as-null-pointer-constant -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy
+FLAGS = -std=c++2a -lncurses -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Weffc++ -Wmisleading-indentation -Wold-style-cast -Wzero-as-null-pointer-constant -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy
 OS_NAME := $(shell uname -s)
 ARCHITECTURE := $(shell uname -p)
 
