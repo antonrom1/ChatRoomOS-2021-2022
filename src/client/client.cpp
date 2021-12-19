@@ -124,7 +124,7 @@ void handle_all_requests(int client_socket_fd, const char *pseudo) {
       int * server_socket_fd = static_cast<int *>(arg);
 
       bzero(buffer, MAX_MESS_SIZE);
-      read(*server_socket_fd, buffer, MAX_MESS_SIZE);
+      [[gnu::unused]]auto received_value = read(*server_socket_fd, buffer, MAX_MESS_SIZE);
 
 	  if (strcmp(buffer, SERVER_SIGINT_MESSAGE) != 0)
 		printf("%s", buffer);
