@@ -128,7 +128,7 @@ void ChatRoom::SendAllMessages() {
 
 void ChatRoom::SendToAll(const std::string &message) {
   for (auto &client : clients_set_) {
-	send(client.GetSocketFd(), message.c_str(), message.size(), 0);
+	send(client.GetSocketFd(), message.c_str(), std::min(message.size(), static_cast<unsigned long>(MAX_MESS_SIZE)), 0);
   }
 }
 
