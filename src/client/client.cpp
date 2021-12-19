@@ -1,3 +1,5 @@
+#define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
+
 #include "../common/error_handling.h"
 #include "../common/communication.h"
 
@@ -12,13 +14,12 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <ctime>
-#include <csignal>
+#include <signal.h>
 
 #define NUM_PROGRAM_ARGS 3
 #define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
-#define MAX_RECEIVE_BUFFER_SIZE 1024
 
-struct Argument {
+struct User_Parameters {
   char *pseudo;
   char *ServerIp;
   port_t ServerPort;
@@ -26,7 +27,7 @@ struct Argument {
 
 int setup_client_socket_fd(port_t kServerPort, const char *ServerIp);
 port_t get_port_from_str(char *port_str);
-Argument parse_args(int argc, char **argv);
+User_Parameters parse_args(int argc, char **argv);
 void handle_all_requests(int client_socket_fd, const char *pseudo);
 [[noreturn]] void* listen_to_server(void * arg);
 void disconnect(const char * pseudo);
@@ -38,11 +39,11 @@ void setup_fd_set(port_t kServerPort,
 
 int main(int argc, char **argv) {
   INIT_ERROR_HANDLER_USAGE_MESSAGE(USAGE);
-  Argument arg = parse_args(argc, argv);
+  User_Parameters pkt = parse_args(argc, argv);
 
-  const port_t kServerPort = arg.ServerPort;
-  const char *kServerIp = arg.ServerIp;
-  const char *kClientPseudo = arg.pseudo;
+  const port_t kServerPort = pkt.ServerPort;
+  const char *kServerIp = pkt.ServerIp;
+  const char *kClientPseudo = pkt.pseudo;
 
   int client_socket_fd;
   fd_set sockets_fds;
@@ -88,7 +89,7 @@ port_t get_port_from_str(char *port_str) {
   return static_cast<port_t>(l_port); // the conversion is safe, we checked for bounds
 }
 
-Argument parse_args(int argc, char **argv) {
+User_Parameters parse_args(int argc, char **argv) {
 
   if (argc != NUM_PROGRAM_ARGS + 1) {
 	ERR_N_EXIT("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);
@@ -98,8 +99,9 @@ Argument parse_args(int argc, char **argv) {
 }
 
 void handle_all_requests(int client_socket_fd, const char *pseudo) {
-  pthread_t new_thread;
-  pthread_create(&new_thread, nullptr, listen_to_server, &client_socket_fd);
+  pthread_t listen_threads;
+  pthread_create(&listen_threads, nullptr, listen_to_server, &client_socket_fd);
+
   send(client_socket_fd, pseudo, strlen(pseudo), 0); //send the pseudo
 
   for (;;) {
@@ -110,24 +112,24 @@ void handle_all_requests(int client_socket_fd, const char *pseudo) {
 
 	if (user_input_ptr == nullptr)
 	  break;
-
 	send(client_socket_fd, reinterpret_cast<char *>(&message), sizeof(message), 0);
   }
   disconnect(pseudo);
-  pthread_kill(new_thread, SIGINT);
+  pthread_kill(listen_threads, SIGINT);
 }
 
 [[noreturn]] void * listen_to_server(void * arg){
+  char buffer[MAX_MESS_SIZE + 1];
   for(;;){
       int * server_socket_fd = static_cast<int *>(arg);
 
-      char buffer[MAX_MESS_SIZE + 1];
       bzero(buffer, MAX_MESS_SIZE);
       read(*server_socket_fd, buffer, MAX_MESS_SIZE);
 
 	  if (strcmp(buffer, SERVER_SIGINT_MESSAGE) != 0)
-		printf ("%s", buffer);
+		printf("%s", buffer);
 	  else{
+		printf("\033[0m");
 		printf("Lost connection...\nServer has stopped working X0\n");
 		exit(NORMAL_EXIT);
 	  }
@@ -138,5 +140,3 @@ void disconnect(const char * pseudo){
   printf("Client %s is disconnected\n", pseudo);
   exit(NORMAL_EXIT);
 }
-
-
