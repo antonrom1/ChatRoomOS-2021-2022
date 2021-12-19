@@ -130,7 +130,6 @@ void handle_all_requests(int client_socket_fd, const char *pseudo) {
 	  if (strncmp(buffer, SERVER_SIGINT_MESSAGE, MAX_MESS_SIZE) != 0)
 		printf("%s", buffer);
 	  else{
-		printf("\033[0m");
 		printf("Lost connection...\nServer has stopped working X0\n");
 		exit(NORMAL_EXIT);
 	  }
