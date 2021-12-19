@@ -17,8 +17,6 @@
 #include <queue>
 #include <csignal>
 
-
-
 class ChatRoom {
  public:
   static ChatRoom *Create(long port);
@@ -45,9 +43,8 @@ class ChatRoom {
   void Stop();
 
   ClientsSet clients_set_;
-  std::queue<std::string> pending_messages_ {};
+  std::queue<std::string> pending_messages_{};
   volatile sig_atomic_t should_stop_ = 0;
 };
-
 
 #endif //PROJETCHAT_SRC_SERVER_CHAT_ROOM_H_

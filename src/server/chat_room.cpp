@@ -8,9 +8,8 @@
 #include "username.h"
 
 ChatRoom::ChatRoom(long port) : clients_set_(ChatRoom::SetupMasterSocket(static_cast<port_t>(port))) {
-  for (const int &sig : {SIGINT, SIGPIPE}) {
-	signal(sig, ChatRoom::SigHandler);
-  }
+  signal(SIGINT, ChatRoom::SigHandler);
+  signal(SIGPIPE, SIG_IGN);
 }
 
 void ChatRoom::Listen() {
