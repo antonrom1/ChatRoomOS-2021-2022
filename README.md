@@ -11,8 +11,23 @@
 *EXIT_OTHER_ERROR*(3): Tout autre type d'erreur qui surviendrait lors de l'exécution de l'app.
 
 
+## Server 
+Le serevr se lance via la commande 
+```shell 
+source ./bin/server <port>
+```
+
+
+## Client 
+Le client se lance via la commande 
+```shell 
+source ./bin/client <pseudo> <ip_serveur> <port>
+```
+
+
 ## Compilation locale
 
+Dans le terminale se déplacer jusque dans le dossier source 
 ```shell
-make
+source make
 ```
