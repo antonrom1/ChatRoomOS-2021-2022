@@ -142,7 +142,7 @@ void ChatRoom::SigHandler(int sig) {
   }
 }
 
-ChatRoom *ChatRoom::Start(long port) {
+ChatRoom *ChatRoom::Create(long port) {
   SetShared(new ChatRoom(port));
   return GetShared();
 }

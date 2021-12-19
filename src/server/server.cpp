@@ -28,6 +28,6 @@ port_t parse_args(int argc, char **argv) {
 int main(int argc, char **argv) {
   INIT_ERROR_HANDLER_USAGE_MESSAGE(USAGE);
   const port_t kServerPort = parse_args(argc, argv);
-  auto cr = ChatRoom::Start(kServerPort);
+  auto cr = ChatRoom::Create(kServerPort);
   cr->Listen();
 }

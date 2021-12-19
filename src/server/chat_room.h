@@ -21,7 +21,7 @@
 
 class ChatRoom {
  public:
-  static ChatRoom *Start(long port);
+  static ChatRoom *Create(long port);
   static ChatRoom *GetShared();
 
   void Listen();
