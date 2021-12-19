@@ -2,24 +2,23 @@
 
 ## Code Ereur
 
-*NORMAL_EXIT*(0) : Le code de retour d'une fin de programme avec succès.
+*NORMAL_EXIT*(0) : Code de retour de programme qui s'est terminé avec succès.
 
-*EXIT_BAD_USAGE_ERROR*(1): L'utilisateur n'entre pas les bons arguments pour se connecter.
+*EXIT_BAD_USAGE_ERROR*(1) : Mauvaises utilisations d'arguments.
 
-*EXIT_SOCK_ERROR*(2): Une erreur qui survient lors d'une connection au server. 
+*EXIT_SOCK_ERROR*(2) : Une erreur qui survient lors d'une connection ou communication avec le serveur. 
 
-*EXIT_OTHER_ERROR*(3): Tout autre type d'erreur qui surviendrait lors de l'exécution de l'app.
+*EXIT_OTHER_ERROR*(3) : Tout autre type d'erreur qui surviendrait lors de l'exécution du programme.
 
 
 ## Lancer le salon de chat 
 
 ### Prérequis 
-Etant donner une application server-client vous devez commencer par lancer le server.
-Dans la suite lancer les clients avec les bons paramètres de connexion server.
-
+Étant donné deux exécutables, client et server, lancez le server.
+Par la suite, lancez les clients avec les bons paramètres.
 
 ### Server 
-Le serevr se lance via la commande 
+Le serveur se lance via la commande suivante :
 ```shell 
 source ./bin/server <port>
 ```
@@ -36,5 +35,5 @@ source ./bin/client <pseudo> <ip_serveur> <port>
 
 Dans le terminale se déplacer jusque dans le dossier source du MakeFile.
 ```shell
-source make
+make
 ```
