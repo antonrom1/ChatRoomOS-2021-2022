@@ -14,7 +14,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <ctime>
-#include <signal.h>
+#include <csignal>
+#include <tuple>
 
 #define NUM_PROGRAM_ARGS 3
 #define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
