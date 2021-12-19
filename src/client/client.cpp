@@ -127,7 +127,7 @@ void handle_all_requests(int client_socket_fd, const char *pseudo) {
       bzero(buffer, MAX_MESS_SIZE);
       std::ignore = read(*server_socket_fd, buffer, MAX_MESS_SIZE);
 
-	  if (strcmp(buffer, SERVER_SIGINT_MESSAGE) != 0)
+	  if (strncmp(buffer, SERVER_SIGINT_MESSAGE, MAX_MESS_SIZE) != 0)
 		printf("%s", buffer);
 	  else{
 		printf("\033[0m");
