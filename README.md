@@ -13,8 +13,9 @@
 
 ## Lancer le salon de chat 
 
-### Prerequis 
-Etant donner une application server-client vous devez commencer par lancer le server
+### Prérequis 
+Etant donner une application server-client vous devez commencer par lancer le server.
+Dans la suite lancer les clients avec les bons paramètres de connexion server.
 
 
 ### Server 
@@ -33,7 +34,7 @@ source ./bin/client <pseudo> <ip_serveur> <port>
 
 ## Compilation locale
 
-Dans le terminale se déplacer jusque dans le dossier source 
+Dans le terminale se déplacer jusque dans le dossier source du MakeFile.
 ```shell
 source make
 ```
