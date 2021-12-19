@@ -33,7 +33,9 @@ source ./bin/client <pseudo> <ip_serveur> <port>
 
 ## Compilation locale
 
-Dans le terminale se déplacer jusque dans le dossier source du MakeFile.
+Dans le terminal se déplacer jusque dans le dossier source du MakeFile.
 ```shell
 make
 ```
+
+Par la suite, vous pourrez trouver les exécutables dans le répertoire ```./bin/```.
