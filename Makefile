@@ -47,7 +47,7 @@ endif
 all: announce $(SERVER_BIN_PATH) $(CLIENT_BIN_PATH)
 	@echo "💪 Done! \n"
 	@echo "🤖 Created by $(AUTHORS)"
-	@echo "🧭 The binaries are located at $(BUILD_DIR_BIN)"
+	@echo "🗺 The binaries are located at $(BUILD_DIR_BIN)"
 
 announce:
 	@echo "🚀 Optimisations:\n $(OPTIMIZATION) \n"
