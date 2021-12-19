@@ -11,15 +11,21 @@
 *EXIT_OTHER_ERROR*(3): Tout autre type d'erreur qui surviendrait lors de l'exécution de l'app.
 
 
-## Server 
+## Lancer le salon de chat 
+
+### Prerequis 
+Etant donner une application server-client vous devez commencer par lancer le server
+
+
+### Server 
 Le serevr se lance via la commande 
 ```shell 
 source ./bin/server <port>
 ```
 
 
-## Client 
-Le client se lance via la commande 
+### Client 
+Pour chacun des clients lancer la commande 
 ```shell 
 source ./bin/client <pseudo> <ip_serveur> <port>
 ```
