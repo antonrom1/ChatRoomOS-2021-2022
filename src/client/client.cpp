@@ -20,7 +20,7 @@
 #define NUM_PROGRAM_ARGS 3
 #define USAGE "Usage: ./client <pseudo> <ip_serveur> <port>\n"
 
-struct User_Parameters {
+struct UserParameters {
   char *pseudo;
   char *ServerIp;
   port_t ServerPort;
@@ -28,7 +28,7 @@ struct User_Parameters {
 
 int setup_client_socket_fd(port_t kServerPort, const char *ServerIp);
 port_t get_port_from_str(char *port_str);
-User_Parameters parse_args(int argc, char **argv);
+UserParameters parse_args(int argc, char **argv);
 void handle_all_requests(int client_socket_fd, const char *pseudo);
 [[noreturn]] void* listen_to_server(void * arg);
 void disconnect(const char * pseudo);
@@ -40,7 +40,7 @@ void setup_fd_set(port_t kServerPort,
 
 int main(int argc, char **argv) {
   INIT_ERROR_HANDLER_USAGE_MESSAGE(USAGE);
-  User_Parameters pkt = parse_args(argc, argv);
+  UserParameters pkt = parse_args(argc, argv);
 
   const port_t kServerPort = pkt.ServerPort;
   const char *kServerIp = pkt.ServerIp;
@@ -90,7 +90,7 @@ port_t get_port_from_str(char *port_str) {
   return static_cast<port_t>(l_port); // the conversion is safe, we checked for bounds
 }
 
-User_Parameters parse_args(int argc, char **argv) {
+UserParameters parse_args(int argc, char **argv) {
 
   if (argc != NUM_PROGRAM_ARGS + 1) {
 	ERR_N_EXIT("Invalid number of arguments", EXIT_BAD_USAGE_ERROR);
